@@ -92,20 +92,6 @@ Game parse_game(const string& line) {
     return {game_id, draws};
 }
 
-map<string, int> aggregate_game(Game& game) {
-    map<string, int> agg {
-        {"red", 0},
-        {"green", 0},
-        {"blue", 0}
-    };
-    for (auto draw : game.draws) {
-        for (auto cube : draw.cubes) {
-            agg[cube.color] += cube.count;
-        }
-    }
-    return agg;
-}
-
 bool check_game_possible(Game& game, vector<Cube>& constraints) {
     for (auto constraint : constraints) {
         for (auto draw: game.draws) {
@@ -116,6 +102,20 @@ bool check_game_possible(Game& game, vector<Cube>& constraints) {
         }
     }
     return true;
+}
+
+int calculate_game_power(Game& game) {
+    map<string, int> high {
+        {"red", 0},
+        {"green", 0},
+        {"blue", 0}
+    };
+    for (auto draw: game.draws) {
+        for (auto cube: draw.cubes) {
+            if (cube.count > high[cube.color]) high[cube.color] = cube.count;
+        }
+    }
+    return high["red"] * high["green"] * high["blue"];
 }
 
 int main() {
@@ -139,12 +139,18 @@ int main() {
         return check_game_possible(game, constraints);
     });
 
-    int sum = 0;
+    int sum1 = 0;
     for (auto possible_game : possible_games) {
-        sum = sum + possible_game.id;
+        sum1 = sum1 + possible_game.id;
         cout << possible_game << '\n';
     };
-    cout << sum << '\n';
+    cout << sum1 << '\n';
+
+    int sum2 = 0;
+    for (auto game : games) {
+        sum2 += calculate_game_power(game);
+    }
+    cout << sum2 << '\n';
 
     return 0;
 }
